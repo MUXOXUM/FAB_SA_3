@@ -16,8 +16,22 @@
 
 ## Пример работы приложения
 
-## Установка и запуск
-```sh
-...
+## Инструкция по запуску проекта
+
+Для работы требуется установленный Node.js.
+
+### 1. Сервер (Backend)
+
+```bash
+cd backend
+npm install
+node server.js
 ```
 
+### 2. Клиент (Client)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
