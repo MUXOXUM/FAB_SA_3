@@ -53,5 +53,13 @@
     "url": "/uploads/videos/VID_20210503_215504-1748194975145-770128775.mp4",
     "originalFilename": "VID_20210503_215504.mp4",
     "timestamp": "2025-05-25T17:42:55.187Z"
+  },
+  {
+    "id": "87c0ff2d-ceed-4858-9a54-cab6a4c926ba",
+    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
+    "senderId": "e9b2953e-db6b-42ef-9e76-5283e2a04248",
+    "type": "text",
+    "text": "s",
+    "timestamp": "2025-05-25T17:50:27.979Z"
   }
 ]
