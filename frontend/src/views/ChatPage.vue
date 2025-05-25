@@ -1,6 +1,18 @@
 <template>
   <div class="chat-page">
     <div class="chat-list-container">
+      <div class="account-section">
+        <button @click="toggleAccountDropdown" class="account-btn">
+          👤 <!-- Account Icon -->
+        </button>
+        <div v-if="showAccountDropdown" class="account-dropdown">
+          <div v-if="currentUserDetails">
+            <p><strong>ID:</strong> {{ currentUserDetails.id }}</p>
+            <p v-if="currentUserDetails.username"><strong>Username:</strong> {{ currentUserDetails.username }}</p>
+          </div>
+          <button @click="logout" class="logout-btn">Logout</button>
+        </div>
+      </div>
       <ChatList 
         :chats="chatList" 
         :currentChatId="selectedChatId" 
@@ -40,9 +52,11 @@ export default {
       chatList: [], 
       selectedChatId: null, 
       currentUserId: null, 
+      currentUserDetails: null, // To store more details like username
       currentChatParticipants: [], 
       isLoadingMessages: false,
       mutedChatIds: new Set(), // To store IDs of muted chats
+      showAccountDropdown: false, // For account dropdown visibility
     };
   },
   computed: {
@@ -66,13 +80,36 @@ export default {
           }).join(''));
           const decodedToken = JSON.parse(jsonPayload);
           this.currentUserId = decodedToken.id;
+          this.currentUserDetails = { id: decodedToken.id, username: decodedToken.username }; // Store ID and username
         } catch (e) {
           console.error('Error decoding token:', e);
           this.currentUserId = null;
+          this.currentUserDetails = null;
         }
       } else {
         console.warn('Auth token not found. User ID cannot be set.');
+        this.currentUserDetails = null;
       }
+    },
+
+    toggleAccountDropdown() {
+      this.showAccountDropdown = !this.showAccountDropdown;
+    },
+
+    logout() {
+      console.log('Logging out...');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('mutedChatIds'); // Clear muted chats preference on logout
+      this.currentUserId = null;
+      this.currentUserDetails = null;
+      this.chatList = [];
+      this.allMessagesByChat = {};
+      this.selectedChatId = null;
+      this.mutedChatIds = new Set();
+      if (this.socket) {
+        this.socket.disconnect();
+      }
+      this.$router.push('/login');
     },
 
     playNotificationSound() {
@@ -400,7 +437,67 @@ export default {
   border-right: 1px solid #003311; /* Dark green border */
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  position: relative; /* For positioning account dropdown */
+}
+
+.account-section {
+  padding: 10px;
+  background-color: #11180f; /* Match ChatList header */
+  border-bottom: 1px solid #003311; /* Match ChatList header border */
+  text-align: left;
+}
+
+.account-btn {
+  background: none;
+  border: none;
+  color: #00ff7f; /* Bright green */
+  font-size: 1.5em; /* Larger icon */
+  cursor: pointer;
+  padding: 5px;
+}
+
+.account-btn:hover {
+  color: #ffffff;
+}
+
+.account-dropdown {
+  position: absolute;
+  top: 50px; /* Adjust as needed based on account-btn height and padding */
+  left: 10px;
+  background-color: #2c3e50; /* Dark, slightly bluish */
+  border: 1px solid #00ff7f;
+  border-radius: 4px;
+  padding: 15px;
+  z-index: 1001; /* Above chat list items */
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.account-dropdown p {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  color: #e0e0e0;
+}
+.account-dropdown p strong {
+  color: #00ff7f;
+}
+
+.logout-btn {
+  background-color: #c0392b; /* Reddish color for logout */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  display: block;
+  width: 100%;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #a93226; /* Darker red on hover */
 }
 
 .chat-view-container {
