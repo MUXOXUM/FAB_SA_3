@@ -28,7 +28,7 @@ npm install
 node server.js
 ```
 
-### 2. Клиент (Client)
+### 2. Клиент (Frontend)
 
 ```bash
 cd frontend
