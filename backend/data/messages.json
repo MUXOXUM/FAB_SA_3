@@ -33,5 +33,25 @@
     "senderId": "e9b2953e-db6b-42ef-9e76-5283e2a04248",
     "text": "ы",
     "timestamp": "2025-05-25T17:17:56.559Z"
+  },
+  {
+    "id": "6c8df203-79f3-4db5-a113-63f764ab5962",
+    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
+    "senderId": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
+    "type": "image",
+    "text": null,
+    "url": "/uploads/images/images-1748194513123-527265730.jpg",
+    "originalFilename": "images.jpg",
+    "timestamp": "2025-05-25T17:35:13.139Z"
+  },
+  {
+    "id": "df8a81a2-bcb5-4d36-9ff3-3e8c1eab1f48",
+    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
+    "senderId": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
+    "type": "video",
+    "text": null,
+    "url": "/uploads/videos/VID_20210503_215504-1748194975145-770128775.mp4",
+    "originalFilename": "VID_20210503_215504.mp4",
+    "timestamp": "2025-05-25T17:42:55.187Z"
   }
 ]

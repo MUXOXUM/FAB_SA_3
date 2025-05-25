@@ -146,7 +146,31 @@ export default {
         alert('Error: User not identified. Please log in again.');
         return;
       }
-      if (!messageData.text.trim() || !messageData.chatId) return;
+
+      // Updated validation: chat_id must exist.
+      // If it's a text message, text must be non-empty.
+      // If it's a file message (image/video), url must exist.
+      if (!messageData.chatId) {
+        console.error('Cannot send message, chatId is missing.', messageData);
+        return;
+      }
+
+      if (messageData.type === 'text') {
+        if (!messageData.text || !messageData.text.trim()) {
+          console.warn('Attempted to send an empty text message.');
+          return;
+        }
+      } else if (messageData.type === 'image' || messageData.type === 'video') {
+        if (!messageData.url) {
+          console.error('Cannot send file message, URL is missing.', messageData);
+          return;
+        }
+      } else {
+        // Should not happen if ChatView emits correctly
+        console.error('Unknown message type or type missing:', messageData);
+        return;
+      }
+      
       if (!this.socket || !this.socket.connected) {
         console.error('Socket not connected. Cannot send message.');
         alert('Not connected to chat server. Please check your connection.');
