@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "username": "123",
+    "email": "123@gmai.com",
+    "password": "$2b$10$YJWfjqgW9mUsVvIJjW.O4OxbyXpSygy09u6H/PDNq4SW0bIhz8SQO"
+  },
+  {
+    "id": 2,
+    "username": "5",
+    "email": "5@gmai.com",
+    "password": "$2b$10$Ea.BqzpTDEdiYcFTH0i87e9PC3Nks8Hmg3AxNR52JckLcAh41Tia."
+  },
+  {
+    "id": 3,
+    "username": "abc",
+    "email": "abc@gmail.com",
+    "password": "$2b$10$A2QAn3AB9ASUS/OV6oZYYOnHaeQ0Vr58Uj0IVnrE9cvuDGx25XA5K"
+  }
+]
