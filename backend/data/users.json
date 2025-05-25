@@ -1,20 +1,14 @@
 [
   {
-    "id": 1,
-    "username": "123",
-    "email": "123@gmai.com",
-    "password": "$2b$10$YJWfjqgW9mUsVvIJjW.O4OxbyXpSygy09u6H/PDNq4SW0bIhz8SQO"
+    "id": "e9b2953e-db6b-42ef-9e76-5283e2a04248",
+    "username": "1",
+    "email": "1@gmail.com",
+    "password": "$2b$10$zdsbXwjuhIRPP.UwJJUb1.IH6FXGO5F2I1ZAy3NyVPcq1zWMjR6tK"
   },
   {
-    "id": 2,
-    "username": "5",
-    "email": "5@gmai.com",
-    "password": "$2b$10$Ea.BqzpTDEdiYcFTH0i87e9PC3Nks8Hmg3AxNR52JckLcAh41Tia."
-  },
-  {
-    "id": 3,
-    "username": "abc",
-    "email": "abc@gmail.com",
-    "password": "$2b$10$A2QAn3AB9ASUS/OV6oZYYOnHaeQ0Vr58Uj0IVnrE9cvuDGx25XA5K"
+    "id": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
+    "username": "2",
+    "email": "2@gmail.com",
+    "password": "$2b$10$EKdNKAixYycg/u/l60H/8.Cu2u9WxYj1ms5ATRK3XeALUAkTXL43K"
   }
 ]
