@@ -1,65 +1,110 @@
 [
   {
-    "id": "64383233-c824-4be0-92e2-5a9ce7e6ad7c",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
-    "text": "sdsd",
-    "timestamp": "2025-05-25T17:09:50.699Z"
+    "id": "a4c6404e-f68f-4867-ac6e-29d453b07fe6",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
+    "type": "text",
+    "text": "123",
+    "reactions": {
+      "😮": [
+        "9a4cebc8-893c-4573-8b92-8f121f60165f",
+        "5143bda2-43ec-4f9f-8a0e-6992fe5651db"
+      ],
+      "👍": [
+        "5143bda2-43ec-4f9f-8a0e-6992fe5651db"
+      ]
+    },
+    "timestamp": "2025-05-25T18:12:31.897Z"
   },
   {
-    "id": "4427384c-5b57-441a-9f73-8be891072f55",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
-    "text": "sdsd",
-    "timestamp": "2025-05-25T17:10:00.845Z"
+    "id": "9b5a5188-114a-476d-a406-0db0bbd94ed8",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
+    "type": "text",
+    "text": "1",
+    "reactions": {},
+    "timestamp": "2025-05-25T19:03:19.682Z"
   },
   {
-    "id": "d728075a-5f1d-460f-a912-d30a341d9569",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
-    "text": "sadasddddddddasddasdas",
-    "timestamp": "2025-05-25T17:11:11.274Z"
+    "id": "a7bd30fe-e498-4fc5-b0bc-4f88b6b9669c",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
+    "type": "text",
+    "text": "2",
+    "reactions": {},
+    "timestamp": "2025-05-25T19:03:25.196Z"
   },
   {
-    "id": "3ec4cdd1-910d-48c8-b276-2fb7aaaff1c9",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "e9b2953e-db6b-42ef-9e76-5283e2a04248",
-    "text": "фаыфв",
-    "timestamp": "2025-05-25T17:17:44.974Z"
+    "id": "d6de8365-aa5f-4fb1-93cb-191868f83f9d",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "9a4cebc8-893c-4573-8b92-8f121f60165f",
+    "type": "text",
+    "text": "2",
+    "reactions": {},
+    "timestamp": "2025-05-25T19:03:52.155Z"
   },
   {
-    "id": "71bd03e4-fcaf-4648-9cdc-31986d674d19",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "e9b2953e-db6b-42ef-9e76-5283e2a04248",
-    "text": "ы",
-    "timestamp": "2025-05-25T17:17:56.559Z"
-  },
-  {
-    "id": "6c8df203-79f3-4db5-a113-63f764ab5962",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
+    "id": "77c9c6c4-3c7c-4e0e-b1d8-6a999beac67d",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
     "type": "image",
     "text": null,
-    "url": "/uploads/images/images-1748194513123-527265730.jpg",
+    "url": "/uploads/images/images-1748199845673-549583242.jpg",
     "originalFilename": "images.jpg",
-    "timestamp": "2025-05-25T17:35:13.139Z"
+    "reactions": {
+      "😮": [
+        "9a4cebc8-893c-4573-8b92-8f121f60165f"
+      ]
+    },
+    "timestamp": "2025-05-25T19:04:05.694Z"
   },
   {
-    "id": "df8a81a2-bcb5-4d36-9ff3-3e8c1eab1f48",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
-    "type": "video",
-    "text": null,
-    "url": "/uploads/videos/VID_20210503_215504-1748194975145-770128775.mp4",
-    "originalFilename": "VID_20210503_215504.mp4",
-    "timestamp": "2025-05-25T17:42:55.187Z"
-  },
-  {
-    "id": "87c0ff2d-ceed-4858-9a54-cab6a4c926ba",
-    "chatId": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "senderId": "e9b2953e-db6b-42ef-9e76-5283e2a04248",
+    "id": "3e04c363-15f5-4af9-8260-8f28b93d6cbf",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
     "type": "text",
-    "text": "s",
-    "timestamp": "2025-05-25T17:50:27.979Z"
+    "text": "ебал тебя",
+    "reactions": {},
+    "timestamp": "2025-05-25T19:06:47.014Z"
+  },
+  {
+    "id": "37dd7e16-77ff-4d78-bc80-51881f7272f3",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "9a4cebc8-893c-4573-8b92-8f121f60165f",
+    "type": "text",
+    "text": "я тебя тоже)",
+    "reactions": {},
+    "timestamp": "2025-05-25T19:06:52.783Z"
+  },
+  {
+    "id": "a040081a-cc50-4bc4-9266-3691c55676aa",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
+    "type": "text",
+    "text": "22:04 😮 1",
+    "reactions": {},
+    "timestamp": "2025-05-25T19:07:00.921Z"
+  },
+  {
+    "id": "88d6c263-a902-43c9-91cd-feabd6483c34",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "9a4cebc8-893c-4573-8b92-8f121f60165f",
+    "type": "text",
+    "text": "фывфы",
+    "reactions": {},
+    "timestamp": "2025-05-25T19:07:05.148Z"
+  },
+  {
+    "id": "1d821d8f-d5e1-40e5-9e11-ecc34055eada",
+    "chatId": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "senderId": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
+    "type": "text",
+    "text": "1",
+    "reactions": {
+      "🙏": [
+        "5143bda2-43ec-4f9f-8a0e-6992fe5651db"
+      ]
+    },
+    "timestamp": "2025-05-25T19:14:23.486Z"
   }
 ]

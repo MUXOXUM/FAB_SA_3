@@ -31,25 +31,60 @@
           
           <span v-if="message.senderId !== currentUserId" class="message-sender">{{ getSenderUsername(message.senderId) }}:</span>
           
-          <span v-if="message.type === 'text' || !message.type" class="message-text" v-html="highlightSearchTerm(message.text)"></span>
-          
-          <div v-if="message.type === 'image'" class="message-media">
-            <a :href="getServerUrl(message.url)" target="_blank" rel="noopener noreferrer">
-              <img :src="getServerUrl(message.url)" :alt="highlightSearchTerm(message.originalFilename || 'Chat Image')" class="chat-image" @load="scrollToBottom"/>
-            </a>
-            <span v-if="message.originalFilename" class="original-filename" v-html="highlightSearchTerm(message.originalFilename)"></span>
-          </div>
+          <div class="message-content">
+            <span v-if="message.type === 'text' || !message.type" class="message-text" v-html="highlightSearchTerm(message.text)"></span>
+            
+            <div v-if="message.type === 'image'" class="message-media">
+              <a :href="getServerUrl(message.url)" target="_blank" rel="noopener noreferrer">
+                <img :src="getServerUrl(message.url)" :alt="highlightSearchTerm(message.originalFilename || 'Chat Image')" class="chat-image" @load="scrollToBottom"/>
+              </a>
+              <span v-if="message.originalFilename" class="original-filename" v-html="highlightSearchTerm(message.originalFilename)"></span>
+            </div>
 
-          <div v-if="message.type === 'video'" class="message-media">
-            <video controls :src="getServerUrl(message.url)" class="chat-video" @loadeddata="scrollToBottom">
-              Your browser does not support the video tag.
-            </video>
-            <a :href="getServerUrl(message.url)" target="_blank" rel="noopener noreferrer" class="original-filename download-link">
-              <span v-html="highlightSearchTerm(message.originalFilename || 'Download Video')"></span>
-            </a>
+            <div v-if="message.type === 'video'" class="message-media">
+              <video controls :src="getServerUrl(message.url)" class="chat-video" @loadeddata="scrollToBottom">
+                Your browser does not support the video tag.
+              </video>
+              <a :href="getServerUrl(message.url)" target="_blank" rel="noopener noreferrer" class="original-filename download-link">
+                <span v-html="highlightSearchTerm(message.originalFilename || 'Download Video')"></span>
+              </a>
+            </div>
           </div>
           
           <span class="message-timestamp">{{ formatTimestamp(message.timestamp) }}</span>
+
+          <!-- Reactions Display -->
+          <div class="reactions-container" v-if="message.reactions && Object.keys(message.reactions).length > 0">
+            <span 
+              v-for="(userIds, emoji) in message.reactions" 
+              :key="emoji" 
+              class="reaction-emoji" 
+              :class="{ 'reacted-by-user': userHasReacted(message.id, emoji) }"
+              @click="toggleReaction(message.id, emoji)"
+              :title="getReactionTooltip(message.id, emoji)"
+            >
+              {{ emoji }} {{ userIds.length }}
+            </span>
+          </div>
+
+          <!-- Reaction Picker Button -->
+           <button 
+                @click.stop="openReactionPicker(message.id)" 
+                class="reaction-picker-btn"
+                title="Add reaction">
+                😊
+            </button>
+            <div 
+                v-if="showReactionPickerFor === message.id" 
+                class="reaction-palette"
+                v-click-outside="() => closeReactionPicker(message.id)">
+                <span 
+                    v-for="emoji in availableReactions" 
+                    :key="emoji" 
+                    @click.stop="toggleReaction(message.id, emoji)">
+                    {{ emoji }}
+                </span>
+            </div>
         </div>
          <div v-if="uploadingFile" class="message sent uploading-placeholder">
             <div class="message-text">
@@ -59,7 +94,7 @@
       </div>
       <form @submit.prevent="handleSendTextMessage" class="message-input-form">
         <button type="button" @click="triggerFileInput" class="file-input-btn" :disabled="!currentChatId || uploadingFile" title="Send image or video">
-          📎
+          <img src="/clip.png" alt="Attach file" width="30" height="30">
         </button>
         <input 
           type="file" 
@@ -85,8 +120,26 @@
 </template>
 
 <script>
+// Directive for v-click-outside
+const clickOutsideDirective = {
+  mounted(el, binding) {
+    el.__ClickOutsideHandler__ = event => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event);
+      }
+    };
+    document.body.addEventListener('click', el.__ClickOutsideHandler__);
+  },
+  beforeUnmount(el) {
+    document.body.removeEventListener('click', el.__ClickOutsideHandler__);
+  },
+};
+
 export default {
   name: 'ChatView',
+  directives: {
+    'click-outside': clickOutsideDirective
+  },
   props: {
     messages: {
       type: Array,
@@ -118,6 +171,8 @@ export default {
       uploadProgress: 0,
       serverBaseUrl: 'http://localhost:3000', // Adjust if your backend URL is different
       searchTerm: '', // Added for search
+      availableReactions: ['👍', '❤️', '😂', '😮', '😢', '🙏'],
+      showReactionPickerFor: null, // message.id for which picker is open
     };
   },
   computed: {
@@ -149,17 +204,20 @@ export default {
       },
       deep: true
     },
-    currentChatId() {
+    currentChatId(newVal, oldVal) {
         this.newMessageText = '';
         this.selectedFile = null;
         this.selectedFileName = '';
         this.uploadingFile = false;
         this.uploadProgress = 0;
-        this.searchTerm = ''; // Clear search on chat change
+        this.searchTerm = '';
+        this.showReactionPickerFor = null; // Close picker on chat change
         if (this.$refs.fileInput) {
             this.$refs.fileInput.value = null;
         }
-        this.scrollToBottom();
+        if (newVal !== oldVal) { // Only scroll if chat actually changed
+            this.scrollToBottom();
+        }
     },
     displayedMessages() {
         // If search results change, and user was scrolled to bottom, try to maintain it
@@ -355,6 +413,65 @@ export default {
       highlightedText += text.substring(lastIndex);
       return highlightedText;
     },
+    toggleReaction(messageId, emoji) {
+      console.log(`ChatView: toggleReaction called. Message ID: ${messageId}, Emoji: ${emoji}, User ID: ${this.currentUserId}`);
+      if (!this.currentUserId) {
+        alert('You must be logged in to react.');
+        console.warn('ChatView: toggleReaction - No currentUserId. Reaction aborted.');
+        return;
+      }
+      console.log('ChatView: Emitting @toggleReaction with payload:', { messageId, reactionEmoji: emoji });
+      this.$emit('toggleReaction', { messageId, reactionEmoji: emoji });
+      
+      if (this.showReactionPickerFor === messageId) {
+          console.log(`ChatView: Reaction picker was open for message ${messageId}, calling closeReactionPicker.`);
+          this.closeReactionPicker(messageId);
+      } else {
+          console.log(`ChatView: Reaction picker was NOT open for message ${messageId} (showReactionPickerFor is ${this.showReactionPickerFor}), so not closing it from toggleReaction.`);
+      }
+    },
+    userHasReacted(messageId, emoji) {
+      const message = this.messages.find(m => m.id === messageId);
+      return message?.reactions?.[emoji]?.includes(this.currentUserId);
+    },
+    getReactionTooltip(messageId, emoji) {
+        const message = this.messages.find(m => m.id === messageId);
+        if (!message || !message.reactions || !message.reactions[emoji]) return '';
+        
+        const userIds = message.reactions[emoji];
+        if (userIds.length === 0) return '';
+
+        const usernames = userIds.map(uid => {
+            const participant = this.chatParticipants.find(p => p.id === uid);
+            return participant ? participant.username : 'Someone';
+        });
+
+        let tooltip = usernames.slice(0, 3).join(', ');
+        if (usernames.length > 3) {
+            tooltip += ` and ${usernames.length - 3} more`;
+        }
+        return tooltip;
+    },
+    openReactionPicker(messageId) {
+        console.log(`ChatView: openReactionPicker called for messageId: ${messageId}. Current showReactionPickerFor: ${this.showReactionPickerFor}`);
+        if (this.showReactionPickerFor === messageId) {
+            this.showReactionPickerFor = null; // Toggle off if already open
+            console.log(`ChatView: Toggled OFF reaction picker for messageId: ${messageId}`);
+        } else {
+            this.showReactionPickerFor = messageId;
+            console.log(`ChatView: Toggled ON reaction picker for messageId: ${messageId}`);
+        }
+    },
+    closeReactionPicker(messageId) {
+        console.log(`ChatView: closeReactionPicker called for messageId: ${messageId}. Current showReactionPickerFor: ${this.showReactionPickerFor}`);
+        // Only close if it's the one currently open
+        if (this.showReactionPickerFor === messageId) {
+             this.showReactionPickerFor = null;
+             console.log(`ChatView: Picker closed for messageId ${messageId}. showReactionPickerFor is now null.`);
+        } else {
+            console.log(`ChatView: Picker NOT closed for messageId ${messageId} because it wasn't the one open (or already null).`);
+        }
+    }
   },
   mounted() {
       this.scrollToBottom();
@@ -425,6 +542,7 @@ export default {
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   display: flex; /* Use flex for better layout of content within message */
   flex-direction: column; /* Stack sender, content, timestamp vertically */
+  position: relative; /* For positioning reaction picker */
 }
 
 .message.sent {
@@ -630,5 +748,105 @@ export default {
 /* Ensure messages container takes remaining space after search bar */
 .messages-container {
   /* flex-grow: 1; already set */
+}
+
+.message-content {
+    /* Wrapper for actual content to allow reactions to sit below */
+    margin-bottom: 5px; 
+}
+
+.reactions-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+  margin-bottom: 5px; /* Space before timestamp if reactions are present */
+  align-self: flex-start; /* Align to start for received, overridden for sent */
+}
+
+.message.sent .reactions-container {
+    align-self: flex-end;
+}
+
+.reaction-emoji {
+  padding: 3px 6px;
+  border-radius: 10px;
+  background-color: #3a3a3a; /* Darker background for reaction pills */
+  color: #e0e0e0;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: 1px solid #444;
+}
+
+.reaction-emoji:hover {
+  background-color: #4a4a4a;
+}
+
+.reaction-emoji.reacted-by-user {
+  background-color: #007bff; /* Blueish tint for user's own reaction */
+  border-color: #0056b3;
+  color: white;
+}
+
+.reaction-picker-btn {
+    background: none;
+    border: none;
+    color: #777;
+    font-size: 1.1em;
+    cursor: pointer;
+    padding: 2px 5px;
+    position: absolute; /* Position near the message */
+    /* Adjust positioning based on sent/received */
+    /* visibility: hidden; */ /* Initially hidden */
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.message:hover .reaction-picker-btn {
+    /* visibility: visible; */
+    opacity: 1;
+}
+
+.message.sent .reaction-picker-btn {
+    right: 5px; 
+    bottom: 25px; /* Adjust to be above timestamp & reactions */
+}
+
+.message.received .reaction-picker-btn {
+    left: 5px;  
+    bottom: 25px; /* Adjust to be above timestamp & reactions */
+}
+
+.reaction-palette {
+    position: absolute;
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    gap: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    z-index: 10;
+    /* Position near the picker button or message */
+    bottom: 45px; /* Adjust as needed */
+}
+.message.sent .reaction-palette {
+    right: 0;
+}
+.message.received .reaction-palette {
+    left: 0;
+}
+
+
+.reaction-palette span {
+    cursor: pointer;
+    font-size: 1.3em;
+    padding: 3px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+.reaction-palette span:hover {
+    background-color: #555;
 }
 </style> 

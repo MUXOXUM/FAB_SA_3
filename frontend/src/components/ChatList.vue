@@ -3,8 +3,13 @@
     <h5>Chats</h5>
     <button @click="showCreateChatModal = true" class="create-chat-btn">Create New Chat</button>
     <ul>
-      <li v-for="chat in chats" :key="chat.id" @click="selectChat(chat.id)" :class="{ active: chat.id === currentChatId }">
-        {{ chat.name }}
+      <li v-for="chat in chats" :key="chat.id" 
+          :class="{ active: chat.id === currentChatId, muted: isChatMuted(chat.id) }"
+          @click="selectChat(chat.id)">
+        <span class="chat-name">{{ chat.name }}</span>
+        <button @click.stop="toggleMute(chat.id)" class="mute-btn">
+          {{ isChatMuted(chat.id) ? '&#x1F515;' : '&#x1F514;' }} <!-- 🔕 / 🔔 -->
+        </button>
       </li>
     </ul>
     <p v-if="!chats || chats.length === 0">No chats available.</p>
@@ -51,9 +56,37 @@ export default {
       newChatName: '',
       newChatUsernames: '',
       createChatError: null,
+      mutedChatIds: new Set(), // For muted chat IDs
     };
   },
+  created() {
+    this.loadMutedChats();
+  },
   methods: {
+    loadMutedChats() {
+      const muted = localStorage.getItem('mutedChatIds');
+      if (muted) {
+        this.mutedChatIds = new Set(JSON.parse(muted));
+      }
+    },
+    saveMutedChats() {
+      localStorage.setItem('mutedChatIds', JSON.stringify(Array.from(this.mutedChatIds)));
+    },
+    isChatMuted(chatId) {
+      return this.mutedChatIds.has(chatId);
+    },
+    toggleMute(chatId) {
+      if (this.mutedChatIds.has(chatId)) {
+        this.mutedChatIds.delete(chatId);
+      } else {
+        this.mutedChatIds.add(chatId);
+      }
+      this.saveMutedChats();
+      this.$emit('chatMuteToggled', { chatId, isMuted: this.isChatMuted(chatId) });
+      // Force re-render if needed, though Vue should detect Set changes in methods for classes
+      // For deep reactivity or explicit updates, consider Vue.set or forceUpdate in Vue 2.
+      // In Vue 3, reactivity with Set should work fine when methods modifying it are called.
+    },
     selectChat(chatId) {
       this.$emit('selectChat', chatId);
     },
@@ -121,6 +154,9 @@ export default {
   cursor: pointer;
   border-bottom: 1px solid #2d2d2d; /* Darker separator */
   transition: background-color 0.2s ease;
+  display: flex; /* Added for spacing button */
+  justify-content: space-between; /* Added for spacing button */
+  align-items: center; /* Added for spacing button */
 }
 
 .chat-list li:hover {
@@ -131,6 +167,11 @@ export default {
   background-color: #004d26; /* Dark green for active chat */
   color: #ffffff;
   font-weight: bold;
+}
+
+.chat-list li.muted .chat-name {
+  color: #888; /* Grey out text for muted chats */
+  font-style: italic;
 }
 
 .chat-list p {
@@ -265,5 +306,26 @@ export default {
 
 .chat-list ul::-webkit-scrollbar-thumb:hover {
   background-color: #006633; 
+}
+
+.chat-list li .chat-name {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mute-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0 5px;
+  margin-left: 10px;
+}
+
+.mute-btn:hover {
+  color: #00ff7f;
 }
 </style> 

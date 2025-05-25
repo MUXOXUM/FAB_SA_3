@@ -1,16 +1,16 @@
 [
   {
-    "id": "60bdc57e-d001-4864-a9d6-60db1dc41a98",
-    "name": "ebal",
+    "id": "ae3dc111-a8ae-49f9-bd85-7325c350ccaa",
+    "name": "govor",
     "participants": [
-      "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
-      "e9b2953e-db6b-42ef-9e76-5283e2a04248"
+      "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
+      "9a4cebc8-893c-4573-8b92-8f121f60165f"
     ],
     "participantUsernames": [
-      "2",
-      "1"
+      "1",
+      "2"
     ],
-    "createdBy": "0fbe3e70-a0a0-471e-8574-5de02c9ef24d",
-    "createdAt": "2025-05-25T17:09:47.623Z"
+    "createdBy": "5143bda2-43ec-4f9f-8a0e-6992fe5651db",
+    "createdAt": "2025-05-25T18:12:22.632Z"
   }
 ]

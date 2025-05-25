@@ -252,27 +252,23 @@ app.post('/api/upload/:chatId', authenticateToken, upload.single('mediaFile'), (
 // Socket.io connection handling
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-    const userId = socket.handshake.query.userId; // Expect userId to be passed in query
+    const userIdFromSocket = socket.handshake.query.userId; // Renamed to avoid conflict
 
-    // Handle joining chat rooms
     socket.on('join_chat', (chatId) => {
         socket.join(chatId);
-        console.log('User ' + (userId || socket.id) + ' joined chat ' + chatId);
-        // Load messages for this chat
+        console.log(`User ${userIdFromSocket || socket.id} joined chat ${chatId}`);
         const allMessages = getMessages();
         const chatMessages = allMessages.filter(msg => msg.chatId === chatId);
         socket.emit('load_messages', { chatId, messages: chatMessages });
     });
 
     socket.on('send_message', (messageData) => {
-        // messageData can now be { text, senderId, chatId, type, url, originalFilename }
         const { text, senderId, chatId, type = 'text', url, originalFilename } = messageData;
 
         if (!senderId || !chatId) {
             console.error('Invalid message data: senderId or chatId missing', messageData);
             return;
         }
-        // For text messages, text is required. For files, url is required.
         if (type === 'text' && !text) {
              console.error('Invalid text message data: text missing', messageData);
             return;
@@ -289,10 +285,11 @@ io.on('connection', (socket) => {
             id: uuidv4(),
             chatId: chatId,
             senderId: senderId,
-            type: type, // 'text', 'image', 'video'
-            text: type === 'text' ? text : null, // Store text only if it's a text message
-            url: url, // URL for image/video
-            originalFilename: originalFilename, // Original name of the uploaded file
+            type: type,
+            text: type === 'text' ? text : null,
+            url: url,
+            originalFilename: originalFilename,
+            reactions: {}, // Initialize reactions as an empty object
             timestamp: new Date().toISOString()
         };
         allMessages.push(newMessage);
@@ -301,14 +298,72 @@ io.on('connection', (socket) => {
         io.to(chatId).emit('receive_message', newMessage);
     });
 
+    // New event handler for toggling reactions
+    socket.on('toggle_reaction', (data) => {
+        const { messageId, chatId, reactionEmoji, userId } = data;
+        if (!messageId || !chatId || !reactionEmoji || !userId) {
+            console.error('Invalid reaction data:', data);
+            // Optionally emit an error back to the user
+            // socket.emit('reaction_error', { messageId, error: 'Missing fields in reaction data' });
+            return;
+        }
+
+        const allMessages = getMessages();
+        const messageIndex = allMessages.findIndex(msg => msg.id === messageId && msg.chatId === chatId);
+
+        if (messageIndex === -1) {
+            console.error('Message not found for reaction:', data);
+            // socket.emit('reaction_error', { messageId, error: 'Message not found' });
+            return;
+        }
+
+        const message = allMessages[messageIndex];
+        // Ensure reactions object exists
+        if (!message.reactions) {
+            message.reactions = {};
+        }
+        // Ensure array for the specific emoji exists
+        if (!message.reactions[reactionEmoji]) {
+            message.reactions[reactionEmoji] = [];
+        }
+
+        const userIndexInReaction = message.reactions[reactionEmoji].indexOf(userId);
+
+        if (userIndexInReaction > -1) {
+            // User has already reacted with this emoji, so remove reaction (unlike)
+            message.reactions[reactionEmoji].splice(userIndexInReaction, 1);
+            // If no users are left for this reaction, remove the emoji key
+            if (message.reactions[reactionEmoji].length === 0) {
+                delete message.reactions[reactionEmoji];
+            }
+        } else {
+            // User has not reacted with this emoji, so add reaction (like)
+            message.reactions[reactionEmoji].push(userId);
+        }
+        
+        // If the entire reactions object is empty, delete it for cleanliness (optional)
+        if (Object.keys(message.reactions).length === 0) {
+            delete message.reactions; // Or set to {} if you prefer it to always exist
+        }
+
+        allMessages[messageIndex] = message; // Update the message in the array
+        saveMessages(allMessages);
+
+        // Broadcast the updated reactions for this specific message to everyone in the chat room
+        io.to(chatId).emit('message_reaction_updated', {
+            messageId: message.id,
+            reactions: message.reactions || {} // Send empty object if reactions were deleted
+        });
+        console.log(`User ${userId} toggled reaction '${reactionEmoji}' on message ${messageId} in chat ${chatId}. New reactions:`, message.reactions);
+    });
+
     socket.on('leave_chat', (chatId) => {
         socket.leave(chatId);
-        console.log('User ' + (userId || socket.id) + ' left chat ' + chatId);
+        console.log(`User ${userIdFromSocket || socket.id} left chat ${chatId}`);
     });
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
-        // Potentially handle removing user from all joined rooms if tracking that server-side
     });
 });
 

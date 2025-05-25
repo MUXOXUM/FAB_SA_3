@@ -1,7 +1,12 @@
 <template>
   <div class="chat-page">
     <div class="chat-list-container">
-      <ChatList :chats="chatList" @selectChat="handleSelectChat" @createChat="handleCreateChat" />
+      <ChatList 
+        :chats="chatList" 
+        :currentChatId="selectedChatId" 
+        @selectChat="handleSelectChat" 
+        @createChat="handleCreateChat"
+        @chatMuteToggled="handleChatMuteToggled" />
     </div>
     <div class="chat-view-container">
       <ChatView 
@@ -11,7 +16,7 @@
         :chatParticipants="currentChatParticipants" 
         :isLoadingMessages="isLoadingMessages"
         @sendMessage="handleSendMessage" 
-      />
+        @toggleReaction="handleToggleReaction" />
     </div>
   </div>
 </template>
@@ -36,7 +41,8 @@ export default {
       selectedChatId: null, 
       currentUserId: null, 
       currentChatParticipants: [], 
-      isLoadingMessages: false, 
+      isLoadingMessages: false,
+      mutedChatIds: new Set(), // To store IDs of muted chats
     };
   },
   computed: {
@@ -66,6 +72,24 @@ export default {
         }
       } else {
         console.warn('Auth token not found. User ID cannot be set.');
+      }
+    },
+
+    playNotificationSound() {
+      // Check if the current selected chat is muted
+      if (this.selectedChatId && this.mutedChatIds.has(this.selectedChatId)) {
+        console.log(`Chat ${this.selectedChatId} is muted. Suppressing notification sound.`);
+        return; 
+      }
+      const audio = new Audio('/notification.mp3'); // Assumes notification.mp3 is in /public
+      audio.play().catch(error => console.warn("Error playing notification sound:", error));
+    },
+
+    loadMutedChatsFromStorage() { // Renamed to avoid conflict with ChatList's method if ever mixed
+      const muted = localStorage.getItem('mutedChatIds');
+      if (muted) {
+        this.mutedChatIds = new Set(JSON.parse(muted));
+        console.log('ChatPage: Loaded muted chats from localStorage:', Array.from(this.mutedChatIds));
       }
     },
 
@@ -219,6 +243,37 @@ export default {
         });
     },
 
+    handleToggleReaction(reactionData) {
+      console.log('ChatPage: handleToggleReaction received:', reactionData);
+      if (!this.currentUserId || !this.selectedChatId) {
+        console.error('ChatPage: User or chat not identified for reaction. currentUserId:', this.currentUserId, 'selectedChatId:', this.selectedChatId);
+        return;
+      }
+      if (!this.socket || !this.socket.connected) {
+        console.error('ChatPage: Socket not connected. Cannot send reaction.');
+        alert('Not connected to chat server. Please check your connection to react.');
+        return;
+      }
+      const payload = {
+        ...reactionData, // { messageId, reactionEmoji }
+        userId: this.currentUserId,
+        chatId: this.selectedChatId 
+      };
+      console.log('ChatPage: Emitting toggle_reaction to server with payload:', payload);
+      this.socket.emit('toggle_reaction', payload);
+    },
+
+    handleChatMuteToggled({ chatId, isMuted }) {
+      if (isMuted) {
+        this.mutedChatIds.add(chatId);
+      } else {
+        this.mutedChatIds.delete(chatId);
+      }
+      // Optionally, re-save to ChatPage's localStorage if you want redundancy,
+      // but ChatList already handles persistence. Here, we just update the reactive state.
+      console.log(`ChatPage: Mute status for chat ${chatId} updated to ${isMuted}. Muted chats:`, Array.from(this.mutedChatIds));
+    },
+
     setupSocketListeners() {
         if (!this.socket) return;
 
@@ -246,7 +301,7 @@ export default {
 
         this.socket.on('receive_message', (newMessage) => {
           console.log('Received new message:', newMessage);
-          const { chatId } = newMessage;
+          const { chatId, senderId } = newMessage; // Destructure senderId
           const existingMessages = this.allMessagesByChat[chatId] ? [...this.allMessagesByChat[chatId]] : [];
           
           // Avoid duplicates if message somehow already exists (e.g. sent by self and echoed)
@@ -256,6 +311,41 @@ export default {
               ...this.allMessagesByChat,
               [chatId]: updatedMessages
             };
+
+            // Play sound notification if message is from another user and chat is selected
+            if (senderId !== this.currentUserId && chatId === this.selectedChatId) {
+              this.playNotificationSound();
+            }
+          }
+        });
+
+        // New listener for reaction updates
+        this.socket.on('message_reaction_updated', (data) => {
+          const { messageId, reactions } = data;
+          if (!this.selectedChatId || !this.allMessagesByChat[this.selectedChatId]) {
+            console.warn('Received reaction update for a chat that is not active or has no messages loaded locally.', data);
+            return;
+          }
+          
+          const messageIndex = this.allMessagesByChat[this.selectedChatId].findIndex(m => m.id === messageId);
+          if (messageIndex > -1) {
+            // Create a new object for the message to ensure reactivity for nested `reactions`
+            const updatedMessage = {
+              ...this.allMessagesByChat[this.selectedChatId][messageIndex],
+              reactions: reactions || {} // Ensure reactions is an object
+            };
+            
+            // Create a new array for the chat messages to ensure reactivity of the list
+            const updatedChatMessages = [...this.allMessagesByChat[this.selectedChatId]];
+            updatedChatMessages[messageIndex] = updatedMessage;
+
+            this.allMessagesByChat = {
+              ...this.allMessagesByChat,
+              [this.selectedChatId]: updatedChatMessages
+            };
+            console.log('Reaction updated for message:', messageId, 'New reactions:', reactions);
+          } else {
+            console.warn('Received reaction update for a message not found locally:', messageId);
           }
         });
 
@@ -272,6 +362,7 @@ export default {
   },
   async created() {
     this.decodeToken();
+    this.loadMutedChatsFromStorage(); // Load muted status
     if (this.currentUserId) {
         await this.fetchChats(); // Wait for chats to be fetched before setting up socket
         this.socket = io('http://localhost:3000', {
