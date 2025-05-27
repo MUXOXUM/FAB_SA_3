@@ -1,38 +1,40 @@
 <template>
-  <div class="auth-container">
-    <div class="logo-section">
-      <img src="/logo.png" alt="Alexicon Logo" />
-    </div>
-    <div class="form-section">
-      <h1 class="welcome-message">Добро пожаловать в Alexicon!</h1>
-      <div class="auth-form">
-        <div class="tabs">
-          <button :class="{ active: isLogin }" @click="switchToLogin">Login</button>
-          <button :class="{ active: !isLogin }" @click="switchToRegister">Register</button>
+  <div class="auth-page-wrapper">
+    <div class="auth-container">
+      <div class="logo-section">
+        <img src="/logo.png" alt="Alexicon Logo" />
+      </div>
+      <div class="form-section">
+        <h1 class="welcome-message">Добро пожаловать в Alexicon!</h1>
+        <div class="auth-form">
+          <div class="tabs">
+            <button :class="{ active: isLogin }" @click="switchToLogin">Login</button>
+            <button :class="{ active: !isLogin }" @click="switchToRegister">Register</button>
+          </div>
+
+          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+          <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
+
+          <form @submit.prevent="handleSubmit">
+            <div v-if="!isLogin" class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" v-model="form.username" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" v-model="form.email" required />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" v-model="form.password" required />
+            </div>
+            <div v-if="!isLogin" class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" v-model="form.confirmPassword" required />
+            </div>
+            <button type="submit" :disabled="isLoading">{{ isLoading ? 'Processing...' : (isLogin ? 'Login' : 'Register') }}</button>
+          </form>
         </div>
-
-        <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-        <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
-
-        <form @submit.prevent="handleSubmit">
-          <div v-if="!isLogin" class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" v-model="form.username" required />
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" v-model="form.email" required />
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" v-model="form.password" required />
-          </div>
-          <div v-if="!isLogin" class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" v-model="form.confirmPassword" required />
-          </div>
-          <button type="submit" :disabled="isLoading">{{ isLoading ? 'Processing...' : (isLogin ? 'Login' : 'Register') }}</button>
-        </form>
       </div>
     </div>
   </div>
@@ -133,8 +135,19 @@ export default {
 };
 </script>
 
-<style scoped src="../assets/auth.css"></style>
 <style scoped>
+.auth-page-wrapper {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #F0F2F5; /* Light gray background for the whole page */
+  color: #333333; /* Default dark text color */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .error-message {
   color: red;
   background-color: #ffebee;
@@ -152,4 +165,6 @@ export default {
   margin-bottom: 15px;
   text-align: center;
 }
-</style> 
+</style>
+
+<style scoped src="../assets/auth.css"></style> 

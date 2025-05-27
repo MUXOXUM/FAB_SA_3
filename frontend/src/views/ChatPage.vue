@@ -2,13 +2,15 @@
   <div class="chat-page">
     <div class="chat-list-container">
       <div class="account-section">
-        <button @click="toggleAccountDropdown" class="account-btn">
-          👤 <!-- Account Icon -->
+        <button @click="toggleAccountDropdown" class="account-btn" ref="accountBtn">
+          <span class="account-icon">👤</span>
+          <span class="account-text">{{ currentUserDetails && currentUserDetails.username ? currentUserDetails.username : 'Аккаунт' }}</span>
         </button>
-        <div v-if="showAccountDropdown" class="account-dropdown">
+        <div v-if="showAccountDropdown" class="account-dropdown" v-click-outside="{ handler: closeAccountDropdown, exclude: [$refs.accountBtn] }">
           <div v-if="currentUserDetails">
-            <p><strong>ID:</strong> {{ currentUserDetails.id }}</p>
             <p v-if="currentUserDetails.username"><strong>Username:</strong> {{ currentUserDetails.username }}</p>
+            <p v-if="currentUserDetails.email"><strong>Email:</strong> {{ currentUserDetails.email }}</p>
+            <p><strong>ID:</strong> {{ currentUserDetails.id }}</p>
           </div>
           <button @click="logout" class="logout-btn">Logout</button>
         </div>
@@ -41,6 +43,36 @@ import ChatView from '@/components/ChatView.vue';
 
 export default {
   name: 'ChatPage',
+  directives: {
+    clickOutside: {
+      mounted(el, binding) {
+        el.__ClickOutsideHandler__ = event => {
+          let excluded = false;
+          if (binding.value.exclude) {
+            for (const excludedEl of binding.value.exclude) {
+              if (excludedEl && (excludedEl === event.target || excludedEl.contains(event.target))) {
+                excluded = true;
+                break;
+              }
+            }
+          }
+          if (!excluded && !(el === event.target || el.contains(event.target))) {
+            binding.value.handler(event);
+          }
+        };
+        document.body.addEventListener('click', el.__ClickOutsideHandler__);
+        // Store the handler on the element so it can be removed correctly
+        el.__ClickOutsideBinding__ = binding.value;
+      },
+      beforeUnmount(el) {
+        document.body.removeEventListener('click', el.__ClickOutsideHandler__);
+      },
+      // Handle binding updates if necessary, though for this case it might not be needed
+      // updated(el, binding) {
+      //   el.__ClickOutsideBinding__ = binding.value;
+      // }
+    }
+  },
   components: {
     ChatList,
     ChatView,
@@ -80,7 +112,11 @@ export default {
           }).join(''));
           const decodedToken = JSON.parse(jsonPayload);
           this.currentUserId = decodedToken.id;
-          this.currentUserDetails = { id: decodedToken.id, username: decodedToken.username }; // Store ID and username
+          this.currentUserDetails = { 
+            id: decodedToken.id, 
+            username: decodedToken.username, 
+            email: decodedToken.email // Assuming email is in the token
+          };
         } catch (e) {
           console.error('Error decoding token:', e);
           this.currentUserId = null;
@@ -94,6 +130,10 @@ export default {
 
     toggleAccountDropdown() {
       this.showAccountDropdown = !this.showAccountDropdown;
+    },
+
+    closeAccountDropdown() { // Method to close the dropdown
+      this.showAccountDropdown = false;
     },
 
     logout() {
@@ -423,87 +463,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.chat-page {
-  display: flex;
-  height: 100vh;
-  background-color: #1a1a1a; /* Dark background */
-  color: #e0e0e0; /* Light text for readability */
-}
-
-.chat-list-container {
-  width: 280px; /* Fixed width for chat list */
-  background-color: #212121; /* Slightly lighter dark shade for distinction */
-  border-right: 1px solid #003311; /* Dark green border */
-  display: flex;
-  flex-direction: column;
-  position: relative; /* For positioning account dropdown */
-}
-
-.account-section {
-  padding: 10px;
-  background-color: #11180f; /* Match ChatList header */
-  border-bottom: 1px solid #003311; /* Match ChatList header border */
-  text-align: left;
-}
-
-.account-btn {
-  background: none;
-  border: none;
-  color: #00ff7f; /* Bright green */
-  font-size: 1.5em; /* Larger icon */
-  cursor: pointer;
-  padding: 5px;
-}
-
-.account-btn:hover {
-  color: #ffffff;
-}
-
-.account-dropdown {
-  position: absolute;
-  top: 50px; /* Adjust as needed based on account-btn height and padding */
-  left: 10px;
-  background-color: #2c3e50; /* Dark, slightly bluish */
-  border: 1px solid #00ff7f;
-  border-radius: 4px;
-  padding: 15px;
-  z-index: 1001; /* Above chat list items */
-  min-width: 200px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-.account-dropdown p {
-  margin: 0 0 10px 0;
-  font-size: 0.9em;
-  color: #e0e0e0;
-}
-.account-dropdown p strong {
-  color: #00ff7f;
-}
-
-.logout-btn {
-  background-color: #c0392b; /* Reddish color for logout */
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  display: block;
-  width: 100%;
-  text-align: center;
-  transition: background-color 0.2s ease;
-}
-
-.logout-btn:hover {
-  background-color: #a93226; /* Darker red on hover */
-}
-
-.chat-view-container {
-  flex-grow: 1; /* Takes remaining width */
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto; /* Allows ChatView to scroll if its content overflows */
-}
-</style>
+<style scoped src="../assets/chat.css"></style>
