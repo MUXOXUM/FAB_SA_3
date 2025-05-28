@@ -1,7 +1,7 @@
 <template>
   <div class="chat-list">
-    <h5>Chats</h5>
-    <button @click="showCreateChatModal = true" class="create-chat-btn">Create New Chat</button>
+    <h5>Чаты</h5>
+    <button @click="showCreateChatModal = true" class="create-chat-btn">Создать новый чат</button>
     <ul>
       <li v-for="chat in chats" :key="chat.id" 
           :class="{ active: chat.id === currentChatId, muted: isChatMuted(chat.id) }"
@@ -12,24 +12,24 @@
         </button>
       </li>
     </ul>
-    <p v-if="!chats || chats.length === 0">No chats available.</p>
+    <p v-if="!chats || chats.length === 0">Нет доступных чатов.</p>
 
     <!-- Create Chat Modal -->
     <div v-if="showCreateChatModal" class="modal-overlay" @click.self="showCreateChatModal = false">
       <div class="modal-content">
-        <h3>Create New Chat</h3>
+        <h3>Создать новый чат</h3>
         <form @submit.prevent="handleCreateChat">
           <div>
-            <label for="chatName">Chat Name:</label>
+            <label for="chatName">Название чата:</label>
             <input type="text" id="chatName" v-model="newChatName" required>
           </div>
           <div>
-            <label for="chatUsers">Add Users (usernames separated by comma):</label>
+            <label for="chatUsers">Добавить пользователей (имена пользователей через запятую):</label>
             <input type="text" id="chatUsers" v-model="newChatUsernames" required>
           </div>
           <div v-if="createChatError" class="error-message">{{ createChatError }}</div>
-          <button type="submit">Create Chat</button>
-          <button type="button" @click="showCreateChatModal = false">Cancel</button>
+          <button type="submit">Создать чат</button>
+          <button type="button" @click="showCreateChatModal = false">Отмена</button>
         </form>
       </div>
     </div>
@@ -93,13 +93,13 @@ export default {
     async handleCreateChat() {
       this.createChatError = null;
       if (!this.newChatName.trim() || !this.newChatUsernames.trim()) {
-        this.createChatError = "Chat name and usernames are required.";
+        this.createChatError = "Требуется название чата и имена пользователей.";
         return;
       }
       try {
         const usernames = this.newChatUsernames.split(',').map(name => name.trim()).filter(name => name);
         if (usernames.length === 0) {
-          this.createChatError = "Please enter at least one username to add to the chat.";
+          this.createChatError = "Пожалуйста, введите хотя бы одно имя пользователя для добавления в чат.";
           return;
         }
 
@@ -112,8 +112,8 @@ export default {
         this.newChatUsernames = '';
         this.showCreateChatModal = false;
       } catch (error) {
-        console.error('Error creating chat:', error);
-        this.createChatError = error.response?.data?.message || 'Failed to create chat. Please try again.';
+        console.error('Ошибка создания чата:', error);
+        this.createChatError = error.response?.data?.message || 'Не удалось создать чат. Пожалуйста, попробуйте еще раз.';
         // No need to close modal on error, user might want to correct input
       }
     }

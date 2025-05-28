@@ -8,8 +8,8 @@
         <h1 class="welcome-message">Добро пожаловать в Alexicon!</h1>
         <div class="auth-form">
           <div class="tabs">
-            <button :class="{ active: isLogin }" @click="switchToLogin">Login</button>
-            <button :class="{ active: !isLogin }" @click="switchToRegister">Register</button>
+            <button :class="{ active: isLogin }" @click="switchToLogin">Войти</button>
+            <button :class="{ active: !isLogin }" @click="switchToRegister">Регистрация</button>
           </div>
 
           <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
@@ -17,22 +17,22 @@
 
           <form @submit.prevent="handleSubmit">
             <div v-if="!isLogin" class="form-group">
-              <label for="username">Username</label>
+              <label for="username">Имя пользователя</label>
               <input type="text" id="username" v-model="form.username" required />
             </div>
             <div class="form-group">
-              <label for="email">Email</label>
+              <label for="email">Электронная почта</label>
               <input type="email" id="email" v-model="form.email" required />
             </div>
             <div class="form-group">
-              <label for="password">Password</label>
+              <label for="password">Пароль</label>
               <input type="password" id="password" v-model="form.password" required />
             </div>
             <div v-if="!isLogin" class="form-group">
-              <label for="confirmPassword">Confirm Password</label>
+              <label for="confirmPassword">Подтвердите пароль</label>
               <input type="password" id="confirmPassword" v-model="form.confirmPassword" required />
             </div>
-            <button type="submit" :disabled="isLoading">{{ isLoading ? 'Processing...' : (isLogin ? 'Login' : 'Register') }}</button>
+            <button type="submit" :disabled="isLoading">{{ isLoading ? 'Обработка...' : (isLogin ? 'Войти' : 'Регистрация') }}</button>
           </form>
         </div>
       </div>
@@ -92,19 +92,19 @@ export default {
           });
           const data = await response.json();
           if (!response.ok) {
-            throw new Error(data.message || 'Login failed');
+            throw new Error(data.message || 'Ошибка входа');
           }
           localStorage.setItem('authToken', data.token);
-          this.successMessage = 'Login successful! Redirecting...';
+          this.successMessage = 'Вход выполнен успешно! Перенаправление...';
           // Optionally reset form: this.resetForm();
           this.$router.push('/chat');
         } catch (error) {
-          this.errorMessage = error.message || 'An error occurred during login.';
+          this.errorMessage = error.message || 'Во время входа произошла ошибка.';
         }
       } else {
         // Handle registration
         if (this.form.password !== this.form.confirmPassword) {
-          this.errorMessage = "Passwords do not match!";
+          this.errorMessage = "Пароли не совпадают!";
           this.isLoading = false;
           return;
         }
@@ -120,13 +120,13 @@ export default {
           });
           const data = await response.json();
           if (!response.ok) {
-            throw new Error(data.message || 'Registration failed');
+            throw new Error(data.message || 'Ошибка регистрации');
           }
-          this.successMessage = 'Registration successful! Please login.';
+          this.successMessage = 'Регистрация прошла успешно! Пожалуйста, войдите.';
           this.resetForm();
           this.isLogin = true; // Switch to login tab
         } catch (error) {
-          this.errorMessage = error.message || 'An error occurred during registration.';
+          this.errorMessage = error.message || 'Во время регистрации произошла ошибка.';
         }
       }
       this.isLoading = false;

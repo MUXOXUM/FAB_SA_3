@@ -1,7 +1,7 @@
 <template>
   <div class="chat-view">
     <div v-if="!currentChatId" class="no-chat-selected">
-      <p>Select a chat to view messages or create a new one.</p>
+      <p>Выберите чат для просмотра сообщений или создайте новый.</p>
     </div>
     <div v-else class="chat-content-wrapper">
       <!-- Search Bar -->
@@ -9,7 +9,7 @@
         <input 
           type="text" 
           v-model="searchTerm" 
-          placeholder="Search messages..." 
+          placeholder="Поиск сообщений..." 
           class="search-input"
         />
         <button v-if="searchTerm" @click="clearSearch" class="clear-search-btn">✖</button>
@@ -17,13 +17,13 @@
 
       <div class="messages-container" ref="messagesContainer">
         <div v-if="isLoadingMessages" class="loading-messages">
-          <p>Loading messages...</p>
+          <p>Загрузка сообщений...</p>
         </div>
         <div v-else-if="displayedMessages.length === 0 && !uploadingFile && !searchTerm" class="no-messages">
-          <p>No messages in this chat yet. Send one or share a file!</p>
+          <p>В этом чате пока нет сообщений. Отправьте одно или поделитесь файлом!</p>
         </div>
         <div v-else-if="displayedMessages.length === 0 && searchTerm" class="no-messages">
-          <p>No messages found matching "{{ searchTerm }}".</p>
+          <p>Сообщений, соответствующих "{{ searchTerm }}", не найдено.</p>
         </div>
         
         <div v-for="message in displayedMessages" :key="message.id || message.timestamp" 
@@ -36,17 +36,17 @@
             
             <div v-if="message.type === 'image'" class="message-media">
               <a :href="getServerUrl(message.url)" target="_blank" rel="noopener noreferrer">
-                <img :src="getServerUrl(message.url)" :alt="highlightSearchTerm(message.originalFilename || 'Chat Image')" class="chat-image" @load="scrollToBottom"/>
+                <img :src="getServerUrl(message.url)" :alt="highlightSearchTerm(message.originalFilename || 'Изображение чата')" class="chat-image" @load="scrollToBottom"/>
               </a>
               <span v-if="message.originalFilename" class="original-filename" v-html="highlightSearchTerm(message.originalFilename)"></span>
             </div>
 
             <div v-if="message.type === 'video'" class="message-media">
               <video controls :src="getServerUrl(message.url)" class="chat-video" @loadeddata="scrollToBottom">
-                Your browser does not support the video tag.
+                Ваш браузер не поддерживает тег video.
               </video>
               <a :href="getServerUrl(message.url)" target="_blank" rel="noopener noreferrer" class="original-filename download-link">
-                <span v-html="highlightSearchTerm(message.originalFilename || 'Download Video')"></span>
+                <span v-html="highlightSearchTerm(message.originalFilename || 'Скачать видео')"></span>
               </a>
             </div>
           </div>
@@ -71,7 +71,7 @@
            <button 
                 @click.stop="openReactionPicker(message.id)" 
                 class="reaction-picker-btn"
-                title="Add reaction">
+                title="Добавить реакцию">
                 😊
             </button>
             <div 
@@ -88,13 +88,13 @@
         </div>
          <div v-if="uploadingFile" class="message sent uploading-placeholder">
             <div class="message-text">
-                <em>Uploading {{ selectedFileName }}... ({{ uploadProgress }}%)</em>
+                <em>Загрузка {{ selectedFileName }}... ({{ uploadProgress }}%)</em>
             </div>
         </div>
       </div>
       <form @submit.prevent="handleSendTextMessage" class="message-input-form">
-        <button type="button" @click="triggerFileInput" class="file-input-btn" :disabled="!currentChatId || uploadingFile" title="Send image or video">
-          <img src="/clip.png" alt="Attach file" width="30" height="30">
+        <button type="button" @click="triggerFileInput" class="file-input-btn" :disabled="!currentChatId || uploadingFile" title="Отправить изображение или видео">
+          <img src="/clip.png" alt="Прикрепить файл" width="30" height="30">
         </button>
         <input 
           type="file" 
@@ -107,12 +107,12 @@
         <input 
             type="text" 
             v-model="newMessageText" 
-            placeholder="Type a message or attach a file..." 
+            placeholder="Введите сообщение или прикрепите файл..." 
             :disabled="!currentChatId || uploadingFile" 
             @keyup.enter="handleSendTextMessage"
         />
         <button type="submit" :disabled="(!newMessageText.trim() && !selectedFile) || !currentChatId || uploadingFile">
-          Send
+          Отправить
         </button>
       </form>
     </div>
@@ -266,13 +266,13 @@ export default {
       // Basic validation (can be expanded)
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm', 'video/ogg'];
       if (!allowedTypes.includes(file.type)) {
-          alert('Unsupported file type. Please select an image (JPEG, PNG, GIF) or video (MP4, WebM, OGG).');
+          alert('Неподдерживаемый тип файла. Пожалуйста, выберите изображение (JPEG, PNG, GIF) или видео (MP4, WebM, OGG).');
           this.$refs.fileInput.value = null; // Reset file input
           return;
       }
       const maxSize = 50 * 1024 * 1024; // 50MB (matches backend)
       if (file.size > maxSize) {
-          alert(`File is too large. Maximum size is ${maxSize / (1024*1024)}MB.`);
+          alert(`Файл слишком большой. Максимальный размер ${maxSize / (1024*1024)}МБ.`);
           this.$refs.fileInput.value = null; // Reset file input
           return;
       }
@@ -292,7 +292,7 @@ export default {
     },
     async uploadFile() {
       if (!this.selectedFile || !this.currentChatId) {
-        alert('Please select a file and ensure a chat is active.');
+        alert('Пожалуйста, выберите файл и убедитесь, что чат активен.');
         return;
       }
 
@@ -305,7 +305,7 @@ export default {
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-          alert('Authentication token not found. Please log in again.');
+          alert('Токен аутентификации не найден. Пожалуйста, войдите снова.');
           this.uploadingFile = false;
           return;
       }
@@ -336,13 +336,13 @@ export default {
               // senderId will be added by parent (ChatPage.vue)
             });
           } else {
-            let errorMessage = 'File upload failed.';
+            let errorMessage = 'Ошибка загрузки файла.';
             try {
                 const errorResponse = JSON.parse(xhr.responseText);
                 errorMessage = errorResponse.message || errorMessage;
             } catch (e) { /* Ignore parsing error, use default message */ }
-            console.error('Upload error:', xhr.status, xhr.responseText);
-            alert(`Error: ${errorMessage}`);
+            console.error('Ошибка загрузки:', xhr.status, xhr.responseText);
+            alert(`Ошибка: ${errorMessage}`);
           }
           this.selectedFile = null;
           this.selectedFileName = '';
@@ -353,8 +353,8 @@ export default {
         };
 
         xhr.onerror = () => {
-          console.error('Network error during upload.');
-          alert('Network error during upload. Please try again.');
+          console.error('Сетевая ошибка во время загрузки.');
+          alert('Сетевая ошибка во время загрузки. Пожалуйста, попробуйте еще раз.');
           this.uploadingFile = false;
            this.selectedFile = null;
           this.selectedFileName = '';
@@ -366,8 +366,8 @@ export default {
         xhr.send(formData);
 
       } catch (error) {
-        console.error('Error uploading file:', error);
-        alert('An unexpected error occurred during upload.');
+        console.error('Ошибка загрузки файла:', error);
+        alert('Во время загрузки произошла непредвиденная ошибка.');
         this.uploadingFile = false;
         this.selectedFile = null;
         this.selectedFileName = '';
@@ -378,7 +378,7 @@ export default {
     },
     getSenderUsername(senderId) {
         const participant = this.chatParticipants.find(p => p.id === senderId);
-        return participant ? participant.username : 'Unknown User';
+        return participant ? participant.username : 'Неизвестный пользователь';
     },
     scrollToBottom(){
         this.$nextTick(() => {
@@ -414,20 +414,20 @@ export default {
       return highlightedText;
     },
     toggleReaction(messageId, emoji) {
-      console.log(`ChatView: toggleReaction called. Message ID: ${messageId}, Emoji: ${emoji}, User ID: ${this.currentUserId}`);
+      console.log(`ChatView: вызвана toggleReaction. ID сообщения: ${messageId}, Эмодзи: ${emoji}, ID пользователя: ${this.currentUserId}`);
       if (!this.currentUserId) {
-        alert('You must be logged in to react.');
-        console.warn('ChatView: toggleReaction - No currentUserId. Reaction aborted.');
+        alert('Вы должны войти в систему, чтобы отреагировать.');
+        console.warn('ChatView: toggleReaction - Нет currentUserId. Реакция отменена.');
         return;
       }
-      console.log('ChatView: Emitting @toggleReaction with payload:', { messageId, reactionEmoji: emoji });
+      console.log('ChatView: Отправка @toggleReaction с полезной нагрузкой:', { messageId, reactionEmoji: emoji });
       this.$emit('toggleReaction', { messageId, reactionEmoji: emoji });
       
       if (this.showReactionPickerFor === messageId) {
-          console.log(`ChatView: Reaction picker was open for message ${messageId}, calling closeReactionPicker.`);
+          console.log(`ChatView: Палитра реакций была открыта для сообщения ${messageId}, вызывается closeReactionPicker.`);
           this.closeReactionPicker(messageId);
       } else {
-          console.log(`ChatView: Reaction picker was NOT open for message ${messageId} (showReactionPickerFor is ${this.showReactionPickerFor}), so not closing it from toggleReaction.`);
+          console.log(`ChatView: Палитра реакций НЕ была открыта для сообщения ${messageId} (showReactionPickerFor равно ${this.showReactionPickerFor}), поэтому не закрывается из toggleReaction.`);
       }
     },
     userHasReacted(messageId, emoji) {
@@ -443,33 +443,33 @@ export default {
 
         const usernames = userIds.map(uid => {
             const participant = this.chatParticipants.find(p => p.id === uid);
-            return participant ? participant.username : 'Someone';
+            return participant ? participant.username : 'Кто-то';
         });
 
         let tooltip = usernames.slice(0, 3).join(', ');
         if (usernames.length > 3) {
-            tooltip += ` and ${usernames.length - 3} more`;
+            tooltip += ` и еще ${usernames.length - 3}`;
         }
         return tooltip;
     },
     openReactionPicker(messageId) {
-        console.log(`ChatView: openReactionPicker called for messageId: ${messageId}. Current showReactionPickerFor: ${this.showReactionPickerFor}`);
+        console.log(`ChatView: вызвана openReactionPicker для messageId: ${messageId}. Текущее showReactionPickerFor: ${this.showReactionPickerFor}`);
         if (this.showReactionPickerFor === messageId) {
             this.showReactionPickerFor = null; // Toggle off if already open
-            console.log(`ChatView: Toggled OFF reaction picker for messageId: ${messageId}`);
+            console.log(`ChatView: Палитра реакций ВЫКЛЮЧЕНА для messageId: ${messageId}`);
         } else {
             this.showReactionPickerFor = messageId;
-            console.log(`ChatView: Toggled ON reaction picker for messageId: ${messageId}`);
+            console.log(`ChatView: Палитра реакций ВКЛЮЧЕНА для messageId: ${messageId}`);
         }
     },
     closeReactionPicker(messageId) {
-        console.log(`ChatView: closeReactionPicker called for messageId: ${messageId}. Current showReactionPickerFor: ${this.showReactionPickerFor}`);
+        console.log(`ChatView: вызвана closeReactionPicker для messageId: ${messageId}. Текущее showReactionPickerFor: ${this.showReactionPickerFor}`);
         // Only close if it's the one currently open
         if (this.showReactionPickerFor === messageId) {
              this.showReactionPickerFor = null;
-             console.log(`ChatView: Picker closed for messageId ${messageId}. showReactionPickerFor is now null.`);
+             console.log(`ChatView: Палитра закрыта для messageId ${messageId}. showReactionPickerFor теперь null.`);
         } else {
-            console.log(`ChatView: Picker NOT closed for messageId ${messageId} because it wasn't the one open (or already null).`);
+            console.log(`ChatView: Палитра НЕ закрыта для messageId ${messageId}, потому что это была не та, которая открыта (или уже null).`);
         }
     }
   },

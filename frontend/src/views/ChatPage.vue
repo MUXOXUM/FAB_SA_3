@@ -8,11 +8,11 @@
         </button>
         <div v-if="showAccountDropdown" class="account-dropdown" v-click-outside="{ handler: closeAccountDropdown, exclude: [$refs.accountBtn] }">
           <div v-if="currentUserDetails">
-            <p v-if="currentUserDetails.username"><strong>Username:</strong> {{ currentUserDetails.username }}</p>
-            <p v-if="currentUserDetails.email"><strong>Email:</strong> {{ currentUserDetails.email }}</p>
+            <p v-if="currentUserDetails.username"><strong>Имя пользователя:</strong> {{ currentUserDetails.username }}</p>
+            <p v-if="currentUserDetails.email"><strong>Электронная почта:</strong> {{ currentUserDetails.email }}</p>
             <p><strong>ID:</strong> {{ currentUserDetails.id }}</p>
           </div>
-          <button @click="logout" class="logout-btn">Logout</button>
+          <button @click="logout" class="logout-btn">Выйти</button>
         </div>
       </div>
       <ChatList 
@@ -118,12 +118,12 @@ export default {
             email: decodedToken.email // Assuming email is in the token
           };
         } catch (e) {
-          console.error('Error decoding token:', e);
+          console.error('Ошибка декодирования токена:', e);
           this.currentUserId = null;
           this.currentUserDetails = null;
         }
       } else {
-        console.warn('Auth token not found. User ID cannot be set.');
+        console.warn('Токен авторизации не найден. ID пользователя не может быть установлен.');
         this.currentUserDetails = null;
       }
     },
@@ -137,7 +137,7 @@ export default {
     },
 
     logout() {
-      console.log('Logging out...');
+      console.log('Выход из системы...');
       localStorage.removeItem('authToken');
       localStorage.removeItem('mutedChatIds'); // Clear muted chats preference on logout
       this.currentUserId = null;
@@ -155,18 +155,18 @@ export default {
     playNotificationSound() {
       // Check if the current selected chat is muted
       if (this.selectedChatId && this.mutedChatIds.has(this.selectedChatId)) {
-        console.log(`Chat ${this.selectedChatId} is muted. Suppressing notification sound.`);
+        console.log(`Чат ${this.selectedChatId} отключен. Звук уведомления подавлен.`);
         return; 
       }
       const audio = new Audio('/notification.mp3'); // Assumes notification.mp3 is in /public
-      audio.play().catch(error => console.warn("Error playing notification sound:", error));
+      audio.play().catch(error => console.warn("Ошибка воспроизведения звука уведомления:", error));
     },
 
     loadMutedChatsFromStorage() { // Renamed to avoid conflict with ChatList's method if ever mixed
       const muted = localStorage.getItem('mutedChatIds');
       if (muted) {
         this.mutedChatIds = new Set(JSON.parse(muted));
-        console.log('ChatPage: Loaded muted chats from localStorage:', Array.from(this.mutedChatIds));
+        console.log('ChatPage: Загружены отключенные чаты из localStorage:', Array.from(this.mutedChatIds));
       }
     },
 
@@ -175,7 +175,7 @@ export default {
 
       if (this.selectedChatId && this.socket && this.socket.connected) {
         this.socket.emit('leave_chat', this.selectedChatId);
-        console.log(`Left chat room: ${this.selectedChatId}`);
+        console.log(`Покинул чат: ${this.selectedChatId}`);
       }
       
       this.selectedChatId = chatId;
@@ -196,25 +196,25 @@ export default {
                 username: selectedChat.participantUsernames[index]
             }));
         } else {
-            this.currentChatParticipants = selectedChat.participants?.map(id => ({id, username: `User ${id.substring(0,4)}`})) || [];
-            console.warn("Participant username details might be incomplete for ChatView for chat:", chatId);
+            this.currentChatParticipants = selectedChat.participants?.map(id => ({id, username: `Пользователь ${id.substring(0,4)}`})) || [];
+            console.warn("Информация об именах участников может быть неполной для ChatView для чата:", chatId);
         }
       } else {
         this.currentChatParticipants = [];
-        console.warn("Selected chat not found in chatList:", chatId);
+        console.warn("Выбранный чат не найден в chatList:", chatId);
       }
 
       if (this.socket && this.socket.connected) {
         this.socket.emit('join_chat', chatId);
-        console.log(`Requested to join chat room: ${chatId}`);
+        console.log(`Запрошено присоединение к чату: ${chatId}`);
       } else {
-        console.error("Socket not connected, cannot join chat. Will attempt to join on connect.");
+        console.error("Сокет не подключен, невозможно присоединиться к чату. Попытка присоединения при подключении.");
         // isLoading will be reset by load_messages or if socket fails to connect and join
       }
     },
 
     handleCreateChat(chatDetails) {
-      console.log('Attempting to create chat:', chatDetails);
+      console.log('Попытка создать чат:', chatDetails);
       const token = localStorage.getItem('authToken');
       fetch('http://localhost:3000/api/chats', {
         method: 'POST',
@@ -226,25 +226,25 @@ export default {
       })
       .then(response => {
         if (!response.ok) {
-          return response.json().then(err => { throw new Error(err.message || 'Failed to create chat'); });
+          return response.json().then(err => { throw new Error(err.message || 'Не удалось создать чат'); });
         }
         return response.json();
       })
       .then(newChat => {
-        console.log('Chat created:', newChat);
+        console.log('Чат создан:', newChat);
         this.chatList.push(newChat);
         this.handleSelectChat(newChat.id); // Select and join the new chat
       })
       .catch(error => {
-        console.error('Error creating chat:', error.message);
-        alert(`Error creating chat: ${error.message}`);
+        console.error('Ошибка создания чата:', error.message);
+        alert(`Ошибка создания чата: ${error.message}`);
       });
     },
 
     handleSendMessage(messageData) {
       if (!this.currentUserId) {
-        console.error('Cannot send message, currentUserId is not set.');
-        alert('Error: User not identified. Please log in again.');
+        console.error('Невозможно отправить сообщение, currentUserId не установлен.');
+        alert('Ошибка: Пользователь не идентифицирован. Пожалуйста, войдите снова.');
         return;
       }
 
@@ -252,29 +252,29 @@ export default {
       // If it's a text message, text must be non-empty.
       // If it's a file message (image/video), url must exist.
       if (!messageData.chatId) {
-        console.error('Cannot send message, chatId is missing.', messageData);
+        console.error('Невозможно отправить сообщение, chatId отсутствует.', messageData);
         return;
       }
 
       if (messageData.type === 'text') {
         if (!messageData.text || !messageData.text.trim()) {
-          console.warn('Attempted to send an empty text message.');
+          console.warn('Попытка отправить пустое текстовое сообщение.');
           return;
         }
       } else if (messageData.type === 'image' || messageData.type === 'video') {
         if (!messageData.url) {
-          console.error('Cannot send file message, URL is missing.', messageData);
+          console.error('Невозможно отправить файловое сообщение, URL отсутствует.', messageData);
           return;
         }
       } else {
         // Should not happen if ChatView emits correctly
-        console.error('Unknown message type or type missing:', messageData);
+        console.error('Неизвестный тип сообщения или тип отсутствует:', messageData);
         return;
       }
       
       if (!this.socket || !this.socket.connected) {
-        console.error('Socket not connected. Cannot send message.');
-        alert('Not connected to chat server. Please check your connection.');
+        console.error('Сокет не подключен. Невозможно отправить сообщение.');
+        alert('Нет подключения к серверу чата. Пожалуйста, проверьте ваше соединение.');
         return;
       }
 
@@ -289,9 +289,9 @@ export default {
     fetchChats() {
         const token = localStorage.getItem('authToken');
         if (!token) {
-            console.warn("No auth token found, cannot fetch chats.");
+            console.warn("Токен авторизации не найден, невозможно загрузить чаты.");
             // Potentially redirect to login or show an error message
-            return Promise.reject("No auth token");
+            return Promise.reject("Токен авторизации не найден");
         }
         this.isLoadingMessages = true; // Indicate loading for initial chat/message load
         return fetch('http://localhost:3000/api/chats', {
@@ -301,7 +301,7 @@ export default {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to fetch chats');
+                throw new Error('Не удалось загрузить чаты');
             }
             return response.json();
         })
@@ -314,21 +314,21 @@ export default {
             }
         })
         .catch(error => {
-            console.error('Error fetching chats:', error);
-            alert('Error fetching your chats. Please try again later.');
+            console.error('Ошибка загрузки чатов:', error);
+            alert('Ошибка загрузки ваших чатов. Пожалуйста, попробуйте позже.');
             this.isLoadingMessages = false;
         });
     },
 
     handleToggleReaction(reactionData) {
-      console.log('ChatPage: handleToggleReaction received:', reactionData);
+      console.log('ChatPage: получено handleToggleReaction:', reactionData);
       if (!this.currentUserId || !this.selectedChatId) {
-        console.error('ChatPage: User or chat not identified for reaction. currentUserId:', this.currentUserId, 'selectedChatId:', this.selectedChatId);
+        console.error('ChatPage: Пользователь или чат не идентифицирован для реакции. currentUserId:', this.currentUserId, 'selectedChatId:', this.selectedChatId);
         return;
       }
       if (!this.socket || !this.socket.connected) {
-        console.error('ChatPage: Socket not connected. Cannot send reaction.');
-        alert('Not connected to chat server. Please check your connection to react.');
+        console.error('ChatPage: Сокет не подключен. Невозможно отправить реакцию.');
+        alert('Нет подключения к серверу чата. Пожалуйста, проверьте ваше соединение, чтобы отреагировать.');
         return;
       }
       const payload = {
@@ -336,7 +336,7 @@ export default {
         userId: this.currentUserId,
         chatId: this.selectedChatId 
       };
-      console.log('ChatPage: Emitting toggle_reaction to server with payload:', payload);
+      console.log('ChatPage: Отправка toggle_reaction на сервер с полезной нагрузкой:', payload);
       this.socket.emit('toggle_reaction', payload);
     },
 
@@ -348,18 +348,18 @@ export default {
       }
       // Optionally, re-save to ChatPage's localStorage if you want redundancy,
       // but ChatList already handles persistence. Here, we just update the reactive state.
-      console.log(`ChatPage: Mute status for chat ${chatId} updated to ${isMuted}. Muted chats:`, Array.from(this.mutedChatIds));
+      console.log(`ChatPage: Статус отключения звука для чата ${chatId} обновлен на ${isMuted}. Отключенные чаты:`, Array.from(this.mutedChatIds));
     },
 
     setupSocketListeners() {
         if (!this.socket) return;
 
         this.socket.on('connect', () => {
-          console.log('Connected to WebSocket server:', this.socket.id, 'for user:', this.currentUserId);
+          console.log('Подключено к WebSocket серверу:', this.socket.id, 'для пользователя:', this.currentUserId);
           // If a chat was selected before socket connected (e.g. from fetchChats), join it.
           if (this.selectedChatId) {
             this.socket.emit('join_chat', this.selectedChatId);
-            console.log(`Re-requested to join chat room after connect: ${this.selectedChatId}`);
+            console.log(`Повторный запрос на присоединение к чату после подключения: ${this.selectedChatId}`);
           } else if (this.chatList.length > 0) {
             // If no chat was selected but chats are loaded, select and join the first one.
             this.handleSelectChat(this.chatList[0].id);
@@ -367,7 +367,7 @@ export default {
         });
 
         this.socket.on('load_messages', (data) => {
-          console.log(`Received load_messages for chat ${data.chatId}:`, data.messages);
+          console.log(`Получены load_messages для чата ${data.chatId}:`, data.messages);
           const sortedMessages = [...data.messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
           this.allMessagesByChat = {
             ...this.allMessagesByChat,
@@ -377,7 +377,7 @@ export default {
         });
 
         this.socket.on('receive_message', (newMessage) => {
-          console.log('Received new message:', newMessage);
+          console.log('Получено новое сообщение:', newMessage);
           const { chatId, senderId } = newMessage; // Destructure senderId
           const existingMessages = this.allMessagesByChat[chatId] ? [...this.allMessagesByChat[chatId]] : [];
           
@@ -400,7 +400,7 @@ export default {
         this.socket.on('message_reaction_updated', (data) => {
           const { messageId, reactions } = data;
           if (!this.selectedChatId || !this.allMessagesByChat[this.selectedChatId]) {
-            console.warn('Received reaction update for a chat that is not active or has no messages loaded locally.', data);
+            console.warn('Получено обновление реакции для чата, который не активен или не имеет локально загруженных сообщений.', data);
             return;
           }
           
@@ -420,19 +420,19 @@ export default {
               ...this.allMessagesByChat,
               [this.selectedChatId]: updatedChatMessages
             };
-            console.log('Reaction updated for message:', messageId, 'New reactions:', reactions);
+            console.log('Реакция обновлена для сообщения:', messageId, 'Новые реакции:', reactions);
           } else {
-            console.warn('Received reaction update for a message not found locally:', messageId);
+            console.warn('Получено обновление реакции для сообщения, не найденного локально:', messageId);
           }
         });
 
         this.socket.on('disconnect', () => {
-          console.log('Disconnected from WebSocket server');
+          console.log('Отключено от WebSocket сервера');
         });
 
         this.socket.on('connect_error', (err) => {
-            console.error("Socket connection error:", err.message);
-            alert("Could not connect to chat server. Please check your connection or try again later.");
+            console.error("Ошибка подключения к сокету:", err.message);
+            alert("Не удалось подключиться к серверу чата. Пожалуйста, проверьте ваше соединение или попробуйте позже.");
             this.isLoadingMessages = false;
         });
     }
@@ -447,8 +447,8 @@ export default {
         });
         this.setupSocketListeners();
     } else {
-        console.error("User ID not available, chat functionality disabled.");
-        alert("You are not logged in. Please log in to use the chat.");
+        console.error("ID пользователя недоступен, функциональность чата отключена.");
+        alert("Вы не вошли в систему. Пожалуйста, войдите, чтобы использовать чат.");
         // Consider redirecting to login page: this.$router.push('/login');
     }
   },
